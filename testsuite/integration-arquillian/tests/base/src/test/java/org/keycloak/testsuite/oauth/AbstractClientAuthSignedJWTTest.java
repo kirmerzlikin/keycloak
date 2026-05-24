@@ -803,7 +803,7 @@ public abstract class AbstractClientAuthSignedJWTTest extends AbstractKeycloakTe
         return getClientSignedJWT(getClient2KeyPair(), "client2", algorithm);
     }
 
-    protected String getClient1SignedJWT() throws Exception {
+    protected String getClient1SignedJWT() {
         return getClientSignedJWT(keyPairClient1, "client1", Algorithm.RS256);
     }
 

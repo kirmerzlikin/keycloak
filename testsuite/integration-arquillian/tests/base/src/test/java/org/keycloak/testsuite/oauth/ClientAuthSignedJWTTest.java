@@ -25,7 +25,10 @@ import java.util.List;
 
 import org.keycloak.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.ClientResource;
+import org.keycloak.admin.client.token.ClientAssertion;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.authenticators.client.JWTClientAuthenticator;
 import org.keycloak.authentication.authenticators.client.JWTClientSecretAuthenticator;
@@ -47,6 +50,7 @@ import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.services.util.CertificateInfoHelper;
 import org.keycloak.testframework.events.EventAssertion;
 import org.keycloak.testsuite.admin.AdminApiUtil;
+import org.keycloak.testsuite.util.AdminClientUtil;
 import org.keycloak.testsuite.util.ClientManager;
 import org.keycloak.testsuite.util.KeyUtils;
 import org.keycloak.testsuite.util.KeystoreUtils;
@@ -137,6 +141,21 @@ public class ClientAuthSignedJWTTest extends AbstractClientAuthSignedJWTTest {
                 .error(Errors.INVALID_TOKEN);
 
     }
+
+	@Test
+	public void testServiceAccountUsingAdminClient() {
+		org.keycloak.representations.AccessTokenResponse accessTokenResponse = KeycloakBuilder.builder()
+				.resteasyClient(AdminClientUtil.createResteasyClient())
+				.serverUrl(oauth.getBaseUrl())
+				.realm(oauth.getRealm())
+				.grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+				.clientAssertion(() -> ClientAssertion.jwt(getClient1SignedJWT()))
+				.build()
+				.tokenManager().grantToken();
+
+		assertNull(accessTokenResponse.getError());
+		oauth.verifyToken(accessTokenResponse.getToken());
+	}
 
     @Test
     public void testCodeToTokenRequestSuccess() throws Exception {
